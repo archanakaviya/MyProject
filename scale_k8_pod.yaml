@@ -1,0 +1,14 @@
+---
+- name: Scale Kubernetes Pods
+  hosts: your_ansible_host
+  become: yes
+  tasks:
+    - name: Scale Deployment
+      k8s:
+        definition:
+          kind: Deployment
+          name: your_deployment_name
+          namespace: your_namespace
+          spec:
+            replicas: 3  # Set the desired number of replicas
+        state: present
