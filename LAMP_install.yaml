@@ -1,0 +1,49 @@
+---
+- name: Install LAMP Application
+  hosts: your_servers
+  become: yes  # Run tasks with sudo
+
+  tasks:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+      when: ansible_os_family == 'Debian'  # Adjust for other package managers
+
+    - name: Install Apache, MySQL, PHP, and other required packages
+      apt:
+        name:
+          - apache2
+          - mysql-server
+          - php
+          - libapache2-mod-php
+          - php-mysql
+          # Add more PHP modules and other dependencies as needed
+        state: present
+      when: ansible_os_family == 'Debian'  # Adjust for other package managers
+
+    - name: Start and enable Apache service
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+      when: ansible_os_family == 'Debian'  # Adjust for other init systems
+
+    - name: Secure MySQL installation (set root password and remove anonymous users)
+      mysql_user:
+        name: root
+        password: your_mysql_root_password
+        login_user: root
+        login_password: ''
+        state: present
+
+    # Add more tasks for MySQL configurations and user accounts as needed
+
+    - name: Create a simple PHP test file
+      copy:
+        content: "<?php phpinfo(); ?>"
+        dest: /var/www/html/index.php
+
+    - name: Restart Apache service to apply changes
+      service:
+        name: apache2
+        state: restarted
