@@ -1,0 +1,54 @@
+---
+- name: CI/CD Pipeline
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Clone the Git repository
+      git:
+        repo: "https://github.com/yourusername/your-web-app.git"
+        dest: /opt/your-web-app
+        version: master
+
+    - name: Install required dependencies
+      become: yes
+      apt:
+        name:
+          - nginx
+          - python3
+          - python3-pip
+      tags:
+        - deploy
+
+    - name: Configure Nginx
+      become: yes
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/your-web-app
+      notify: Restart Nginx
+      tags:
+        - deploy
+
+    - name: Install Python dependencies
+      pip:
+        requirements: /opt/your-web-app/requirements.txt
+      tags:
+        - deploy
+
+    - name: Run application tests
+      command: /opt/your-web-app/tests/run_tests.sh
+      tags:
+        - test
+
+    - name: Deploy the application
+      command: /opt/your-web-app/deploy.sh
+      tags:
+        - deploy
+
+  handlers:
+    - name: Restart Nginx
+      become: yes
+      service:
+        name: nginx
+        state: restarted
+      tags:
+        - deploy
